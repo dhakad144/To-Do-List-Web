@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../static/CSS/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
+</head>
+
+<script>
+    class DOADS {
+        constructor() {
+            this.edit_body = document.querySelector(".EDIT");
+            this.add_body = document.querySelector(".ADD");
+            this.add_frame_display = document.querySelector("#add_frame_display");
+            this.add_frame_display.addEventListener('click',()=>{
+                this.add_body.style.display = 'grid';
+            })
+            console.log('call constructor')
+            this.addtabel();
+
+        }
+        fetch(id) {
+            console.log(id);
+            document.querySelector(`#id`).value = id;
+            let desc = document.querySelector(`#${this.mkencry(id)}-D`);
+            let sta = document.querySelector(`#${this.mkencry(id)}-S`);
+            let textarea = document.querySelector("#textarea_description");
+            let input_feild = document.querySelector("#input_status");
+            textarea.innerText = desc.innerText;
+            if (sta.innerText == 'complete') {
+                input_feild.checked = true;
+            } else {
+                input_feild.checked = false;
+            }
+            this.edit_body.style.display = 'grid';
+        }
+        mkencry(value) {
+            console.log(value);
+
+            let string = value.toString();
+            let list_ = string.match(/\d/g);
+
+            let alphabet = 'ABCDEFGHIJ';
+            let new_string = '';
+
+            for (let i = 0; i < list_.length; i++) {
+
+                new_string += alphabet[Math.abs(list_[i])];
+            }
+
+            return new_string
+        }
+        addtabel() {
+            let data = {{ data | tojson }};
+            console.log(data);
+    let table_body = document.querySelector('#table_body');
+    for (let i = 0; i < data.length; i++) {
+        let tr = document.createElement('tr');
+        let td = `
+                                <td id="${this.mkencry(data[i][0])}-S">${data[i][1]}</td>
+                                <td id="${this.mkencry(data[i][0])}-D">${data[i][2]}</td>
+                                <td id="${this.mkencry(data[i][0])}">${data[i][3]}</td>
+                                <td> <button class="edit_button" name="edit_button" value="${data[i][0]}" >EDIT</button></td>`;
+        tr.innerHTML = td;
+        table_body.appendChild(tr);
+        
+    }
+    this.edit_btn();
+                    }
+
+
+        edit_btn(){
+            let btn = document.querySelectorAll('.edit_button');
+            btn.forEach(div=>{
+                div.addEventListener("click",()=>{
+
+                    this.fetch(div.value);
+                })
+
+            });
+        }
+            }
+ 
+    document.addEventListener("DOMContentLoaded", () => {
+        let obj = new DOADS();
+
+        let status = "{{status}}";
+
+        if (status == 'EDIT') {
+           obj.edit();
+        } else if (status == 'ADD') {
+
+            obj.add();
+        }
+        let tbody = document.querySelector('#table_body');
+        let tr = tbody.querySelectorAll('tr');
+        tr.forEach(div=>{
+            let td = div.querySelector('td');
+            if (td.innerText == 'complete') {
+                div.style.color = 'green';
+            }
+            else  if (td.innerText == 'uncomplete'){
+                
+                div.style.color = 'red';
+            }
+        })
+
+    });
+</script>
+
+<body>
+    <header>
+        <h1>DO&DOES</h1>
+    </header>
+    <section class="EDIT" >
+        <form class="EDIT-form" action="/editsumit" method="post">
+            <input type="text" id="id" name="id" value="" style="display: none;">
+            <label for="textarea_description" >description</label>
+            <textarea name="textarea_description" id="textarea_description"></textarea>
+            <div class="status-div">
+                <label for="input_status" >status</label>
+                <input type="checkbox" name="input_status" id="input_status">
+            </div>
+            <button id="sumit-E">Sumit</button>
+        </form>
+    </section>
+
+    <section class="ADD" style="display: none;">
+        <form class="ADD-form" action="/addsumit" method="post">
+            <label for="" >description</label>
+            <textarea name="A_textarea_description" id="A_textarea_description"></textarea>
+            <button id="sumit-A">Sumit</button>
+        </form>
+    </section>
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th class="1">Status</th>
+                    <th>Discription</th>
+                    <th>Date</th>
+                    <th>EDIT</th>
+                </tr>
+            </thead>
+            <tbody id="table_body">
+            </tbody>
+        </table>
+        <div class="add_btn-div">
+            <button class="add_btn" id="add_frame_display">ADD</button>
+        </div>
+    </main>
+</body>
+
+</html>
